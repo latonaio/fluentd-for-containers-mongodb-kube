@@ -1,0 +1,61 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: fluentd-conf
+  namespace: default
+  labels:
+    addonmanager.kubernetes.io/mode: Reconcile
+data:
+  fluent.conf: |-
+    <system>
+      log_level info
+    </system>
+
+    <source>
+    @type tail
+    path /var/log/containers/*.log
+    pos_file "#{ENV['POS_FILE']}"
+    tag kubernetes.*
+    time_format %Y-%m-%dT%H:%M:%S
+    format json
+    read_from_head true
+    </source>
+
+    <filter "kubernetes.var.log.containers.**.log">
+      @type kubernetes_metadata
+      ca_file "#{ENV['CA_FILE']}"
+      bearer_token_file "#{ENV['BEARER_TOKEN_FILE']}"
+      skip_labels true
+      skip_container_metadata true
+      skip_master_url true
+      skip_namespace_metadata true
+    </filter>
+
+    <match kubernetes.**>
+      @type rewrite_tag_filter
+      <rule>
+        key $.kubernetes.container_name
+        pattern  /hogehoge/
+        tag mongo.hogehoge
+      </rule>
+    </match>
+
+    <match mongo.**>
+      @type mongo
+      host xxxxx
+      port xxxxx
+      database xxx
+      collection '${tag}'
+      remove_tag_prefix mongo.
+      <buffer>
+        flush_mode interval
+        retry_type exponential_backoff
+        flush_thread_count 2
+        flush_interval 5s
+        retry_forever
+        retry_max_interval 30
+        chunk_limit_size 2M
+        queue_limit_length 8
+        overflow_action block
+      </buffer>
+    </match>
