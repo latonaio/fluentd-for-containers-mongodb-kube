@@ -11,13 +11,13 @@ AION で fluentd を動かすためには、主にエッジコンピューティ
 fluentd-for-containers-mongodb-kube は、AION のプラットフォーム上での動作を前提としています。
 使用する際は、事前に下記の通りAIONの動作環境を用意してください。
 
-・OS: Linux OS
+* OS: Linux OS  
 
-・CPU: ARM/AMD/Intel
+* CPU: ARM/AMD/Intel  
 
-・Kubernetes
+* Kubernetes  
 
-・AION のリソース
+* AION のリソース  
 
 ## Dockerイメージの生成  
 ### 起動方法
