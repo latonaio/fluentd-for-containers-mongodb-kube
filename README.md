@@ -2,9 +2,6 @@
  
 fluentd-for-containers-mongodb-kube は、コンテナ（Kubernetesの対象Pod）のログを収集し、MongoDBに保存するためのマイクロサービスです。  
 
-## AION での fluentd の動作  
-AION で fluentd を動かすためには、主にエッジコンピューティング環境の特性とシステム要求に留意して、aion-core-manifests に適切な追加設定を行う必要があります。
-
 
 ## 動作環境
 
@@ -18,6 +15,56 @@ fluentd-for-containers-mongodb-kube は、AION のプラットフォーム上で
 * Kubernetes  
 
 * AION のリソース  
+
+## ログをマイクロサービス別に絞り込む  
+
+ログをマイクロサービス別に絞り込みたい場合、次のように記述します。  
+
+```
+    <match "kubernetes.var.log.containers.register-face-to-guest-table-kube**.log">
+      @type rewrite_tag_filter
+
+      <rule>
+        key $.kubernetes.container_name
+        pattern  /register-face-to-guest-table-kube/
+        tag output.register-face-to-guest-table-kube
+      </rule>
+
+    </match>
+    
+    <filter "kubernetes.var.log.containers.register-face-to-guest-table-kube**.log">
+      @type grep
+      <regexp>
+        key log
+        pattern /updateGuest/
+      </regexp>
+    </filter>
+
+    <match "kubernetes.var.log.containers.azure-face-api-registrator-kube**.log">
+      @type rewrite_tag_filter
+
+      <rule>
+        key $.kubernetes.container_name
+        pattern  /azure-face-api-registrator-kube/
+        tag output.azure-face-api-registrator-kube
+      </rule>
+
+    </match>
+    
+    <filter "kubernetes.var.log.containers.containers.azure-face-api-registrator-kube**.log">
+      @type grep
+      <regexp>
+        key log
+        pattern /xxxxxxxx/
+      </regexp>
+    </filter>    
+    
+```
+  
+## AION での fluentd の動作  
+AION で fluentd を動かすためには、主にエッジコンピューティング環境の特性とシステム要求に留意して、aion-core-manifests に適切な追加設定を行う必要があります。
+
+
 
 ## Dockerイメージの生成  
 ### 起動方法
