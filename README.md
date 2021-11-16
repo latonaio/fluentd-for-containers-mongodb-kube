@@ -9,11 +9,8 @@ fluentd-for-containers-mongodb-kube は、AION のプラットフォーム上で
 使用する際は、事前に下記の通りAIONの動作環境を用意してください。
 
 * OS: Linux OS  
-
 * CPU: ARM/AMD/Intel  
-
 * Kubernetes  
-
 * AION のリソース  
 
 ## ログをマイクロサービス別に絞り込む  
@@ -80,5 +77,5 @@ make docker-build
 現在のdockerイメージではfluentd用に以下のプラグインを使用しています。  
 
 * fluent-plugin-mongo  
-
 * fluent-plugin-rabbitmq  
+
