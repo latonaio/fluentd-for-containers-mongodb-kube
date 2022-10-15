@@ -2,7 +2,6 @@
  
 fluentd-for-containers-mongodb-kube は、コンテナ（Kubernetesの対象Pod）のログを収集し、MongoDBに保存するためのマイクロサービスです。  
 
-
 ## 動作環境
 
 fluentd-for-containers-mongodb-kube は、AION のプラットフォーム上での動作を前提としています。
@@ -13,54 +12,79 @@ fluentd-for-containers-mongodb-kube は、AION のプラットフォーム上で
 * Kubernetes  
 * AION のリソース  
 
-## ログをマイクロサービス別に絞り込む  
+## 全マイクロサービスのログの取得
 
-ログをマイクロサービス別に絞り込みたい場合、次のように記述します。  
-
+クラスター内の全てのマイクロサービスのログを取得する場合、fluentd-configmap.yaml に次のように記述します。
 ```
-    <match "kubernetes.var.log.containers.register-face-to-guest-table-kube**.log">
+    <match kubernetes.**>
       @type rewrite_tag_filter
-
       <rule>
         key $.kubernetes.container_name
-        pattern  /register-face-to-guest-table-kube/
-        tag output.register-face-to-guest-table-kube
+        pattern /(.*)/
+        tag mongo.$1
       </rule>
-
     </match>
-    
-    <filter "kubernetes.var.log.containers.register-face-to-guest-table-kube**.log">
+```
+
+## 必要のないマイクロサービスのログの除外
+
+必要ないマイクロサービスのログを除外したい場合、全マイクロサービスのログを取得するよう記述した上で、fluentd-configmap.yaml に次のように記述します。
+```
+    <filter kubernetes.**>
       @type grep
-      <regexp>
-        key log
-        pattern /updateGuest/
-      </regexp>
+      <exclude>
+        key $.kubernetes.container_name
+        pattern fluentd
+      </exclude>
     </filter>
+```
 
-    <match "kubernetes.var.log.containers.azure-face-api-registrator-kube**.log">
+## 指定したマイクロサービスのログの取得
+
+指定したマイクロサービスのログを取得する場合、fluentd-configmap.yaml に次のように記述します。
+```
+    <match kubernetes.**>
       @type rewrite_tag_filter
-
+      # container nameを指定する場合
       <rule>
         key $.kubernetes.container_name
-        pattern  /azure-face-api-registrator-kube/
-        tag output.azure-face-api-registrator-kube
+        pattern /container_name/
+        tag mongo.container_name
       </rule>
-
     </match>
-    
-    <filter "kubernetes.var.log.containers.containers.azure-face-api-registrator-kube**.log">
-      @type grep
-      <regexp>
-        key log
-        pattern /xxxxxxxx/
-      </regexp>
-    </filter>    
-    
 ```
-  
+
+## 指定した文字列を含むマイクロサービスのログの取得
+
+指定した文字列を含むマイクロサービスのログを取得する場合、fluentd-configmap.yaml に次のように記述します。
+```
+    <match kubernetes.**>
+        @type rewrite_tag_filter
+      # container nameに特定の文字列（例:reads）を含む場合
+      <rule>
+        key $.kubernetes.container_name
+        pattern /^.*reads.*$/
+        tag mongo.reads
+      </rule>
+    </match>
+```
+
+## 指定した文字列を含むログの取得
+
+指定した文字列を含むログを取得する場合、fluentd-configmap.yaml に次のように記述します。
+```
+    <match kubernetes.**>
+      # logに特定の文字列（例:"IsMarkedForDeletion":true）を含む場合
+      <rule>
+        key log
+        pattern /^.*"IsMarkedForDeletion":true.*$/
+        tag mongo."IsMarkedForDeletion":true
+      </rule>
+    </match>
+```
+
 ## AION での fluentd の動作  
 AION で fluentd を動かすためには、主にエッジコンピューティング環境の特性とシステム要求に留意して、aion-core-manifests に適切な追加設定を行う必要があります。
-
 
 
 ## Dockerイメージの生成  
