@@ -82,6 +82,19 @@ fluentd-for-containers-mongodb-kube は、AION のプラットフォーム上で
       </rule>
     </match>
 ```
+## 指定したラベルが付与されたマイクロサービスのログの取得
+
+指定したラベルが付与されたマイクロサービスのログを取得する場合、fluentd-configmap.yaml に次のように記述します。
+```
+    <match kubernetes.**>
+      # labelsを指定する場合
+      <rule>
+        key $.kubernetes.labels.app
+        pattern /SAP_PRODUCT_MASTER/
+        tag mongo.SAP_PRODUCT_MASTER
+      </rule>
+    </match>
+```
 
 ## AION での fluentd の動作  
 AION で fluentd を動かすためには、主にエッジコンピューティング環境の特性とシステム要求に留意して、aion-core-manifests に適切な追加設定を行う必要があります。
